@@ -43,7 +43,7 @@ class ChatBot:
     async def handle_message(self, event: GroupMessageEvent, bot: Bot) -> None:
         """处理收到的群消息"""
         
-        if event.group_id not in global_config.talk_allowed_groups:
+        if event.group_id not in global_config.talk_allowed_groups.keys():
             return
         self.bot = bot  # 更新 bot 实例
         

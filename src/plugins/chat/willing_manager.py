@@ -49,12 +49,11 @@ class WillingManager:
         # print(f"放大系数_willing: {global_config.response_willing_amplifier}, 当前意愿: {current_willing}")
         
         reply_probability = max((current_willing - 0.45) * 2, 0)
-        if group_id not in config.talk_allowed_groups:
+        if group_id not in global_config.talk_allowed_groups.keys():
             current_willing = 0
             reply_probability = 0
-            
-        if group_id in config.talk_frequency_down_groups:
-            reply_probability = reply_probability / global_config.down_frequency_rate
+        else:           
+            reply_probability = reply_probability / global_config.talk_allowed_groups[group_id]
 
         reply_probability = min(reply_probability, 1)
         if reply_probability < 0:

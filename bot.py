@@ -93,8 +93,10 @@ def scan_provider(env_config: dict):
     for key in env_config:
         # 检查键是否符合 {provider}_BASE_URL 或 {provider}_KEY 的格式
         if key.endswith("_BASE_URL") or key.endswith("_KEY"):
-            # 提取 provider 名称
-            provider_name = key.split("_", 1)[0]  # 从左分割一次，取第一部分
+            # 提取 provider 名称（去掉 _BASE_URL 或 _KEY）
+            provider_name = key[:-9] if key.endswith("_BASE_URL") else key[:-4]
+
+            logger.info(f"provider_name:{provider_name}")
 
             # 初始化 provider 的字典（如果尚未初始化）
             if provider_name not in provider:
