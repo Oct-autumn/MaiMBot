@@ -92,7 +92,11 @@ def get_cloest_chat_from_db(db, length: int, timestamp: str):
     
     if closest_record:            
         closest_time = closest_record['time']
-        chat_id = closest_record['chat_id']  # 获取chat_id
+
+        chat_id = closest_record.get('chat_id', 0)  # 获取chat_id
+        if chat_id == 0:
+            chat_id = closest_record['_id'] # 旧数据没有chat_id，使用_id代替
+
         # 获取该时间戳之后的length条消息，保持相同的chat_id
         chat_records = list(db.db.messages.find(
             {

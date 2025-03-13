@@ -104,6 +104,8 @@ class ResponseGenerator:
             stream_id=message.chat_stream.stream_id,
         )
 
+        logger.debug(f"prompt: {prompt}")
+
         # 读空气模块 简化逻辑，先停用
         # if global_config.enable_kuuki_read:
         #     content_check, reasoning_content_check = await self.model_v3.generate_response(prompt_check)

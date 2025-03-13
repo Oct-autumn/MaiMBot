@@ -281,11 +281,17 @@ class CQCode:
 
         if self.reply_message.sender.user_id:
             
+            group_id = getattr(self.reply_message, "group_id", None)
+            if group_id:
+                group_info = GroupInfo(group_id=group_id)
+            else:
+                group_info = None
+
             message_obj = MessageRecvCQ(
                 user_info=UserInfo(user_id=self.reply_message.sender.user_id,user_nickname=self.reply_message.sender.nickname),
                 message_id=self.reply_message.message_id,
                 raw_message=str(self.reply_message.message),
-                group_info=GroupInfo(group_id=self.reply_message.group_id),
+                group_info=group_info,
             )
             
 

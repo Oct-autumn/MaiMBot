@@ -37,11 +37,11 @@ class PromptBuilder:
             str: 构建好的prompt
         """
         # 先禁用关系
-        if 0 > 30:
-            relation_prompt = "关系特别特别好，你很喜欢喜欢他"
+        if 0 > 50:
+            relation_prompt = "关系挺好，你很喜欢ta"
             relation_prompt_2 = "热情发言或者回复"
         elif 0 < -20:
-            relation_prompt = "关系很差，你很讨厌他"
+            relation_prompt = "关系很差，你很讨厌ta"
             relation_prompt_2 = "骂他"
         else:
             relation_prompt = "关系一般"
@@ -78,7 +78,7 @@ class PromptBuilder:
         if stream_id:
             chat_talking_prompt = get_recent_group_detailed_plain_text(self.db, stream_id, limit=global_config.MAX_CONTEXT_SIZE,combine = True)   
             chat_stream=chat_manager.get_stream(stream_id)
-            if chat_stream.group_info:
+            if chat_stream.group_info and chat_stream.group_info.group_id:
                 chat_talking_prompt = f"以下是群里正在聊天的内容：\n{chat_talking_prompt}"
             else:
                 chat_in_group=False
@@ -161,7 +161,7 @@ class PromptBuilder:
             prompt_ger += '你喜欢用倒装句'
         if random.random() < 0.02:
             prompt_ger += '你喜欢用反问句'
-        if random.random() < 0.01:
+        if random.random() < 0.002:
             prompt_ger += '你喜欢用文言文'
 
         # 额外信息要求

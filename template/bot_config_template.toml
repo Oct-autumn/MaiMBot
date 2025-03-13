@@ -109,7 +109,7 @@ enable_debug_output = false  # 是否启用调试输出
 enable_friend_chat = false   # 是否启用好友聊天
 
 [groups]
-talk_allowed = { 123 = 1.5, 456 = 1.0, 789 = 0.5 } #可以回复消息的群
+talk_allowed = { 123 = 1.5, 456 = 1.0, 789 = 0.5 } #可以回复消息的群及其回复权重
 ban_user_id = []                                   #禁止回复消息的QQ号
 
 

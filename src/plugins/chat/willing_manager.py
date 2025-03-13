@@ -1,10 +1,31 @@
 import asyncio
+import math
 from typing import Dict
+from loguru import logger
 
 
 from .config import global_config
 from .chat_stream import ChatStream
 
+# 此函数可以用于reply_probability = max(s_curve(current_willing,), 0)意愿到发言概率的映射
+def s_curve(x, n=1, a=10, k=0.5):
+    """
+    可调S型曲线（输入0~n，输出0~1）
+    参数：
+        x : 输入值（支持标量或数组）
+        n : 输入范围上限
+        a : 控制陡峭度（默认10）
+        k : 拐点位置比例（0<k<1，实际拐点x=n*k）
+    """
+    x_norm = x / n  # 归一化到0~1
+    z = a * (x_norm - k)
+    sig_z = 1 / (1 + math.exp(-z))
+
+    # 计算边界值
+    sig_min = 1 / (1 + math.exp(a * k))  # x=0时的sigmoid
+    sig_max = 1 / (1 + math.exp(-a * (1 - k)))  # x=n时的sigmoid
+
+    return (sig_z - sig_min) / (sig_max - sig_min)
 
 class WillingManager:
     def __init__(self):
@@ -50,19 +71,25 @@ class WillingManager:
         
         current_willing = self.chat_reply_willing.get(chat_id, 0)
         
-        # print(f"初始意愿: {current_willing}")
+        logger.debug(f"初始意愿: {current_willing}")
         if is_mentioned_bot and current_willing < 1.0:
             current_willing += 0.9
-            print(f"被提及, 当前意愿: {current_willing}")
+            logger.debug(f"被提及, 当前意愿: {current_willing}")
         elif is_mentioned_bot:
             current_willing += 0.05
-            print(f"被重复提及, 当前意愿: {current_willing}")
-        
+            logger.debug(f"被重复提及, 当前意愿: {current_willing}")
+
+        if (not is_mentioned_bot) and chat_stream.group_info.group_id == None and current_willing < 1.0:
+            # 私聊，没有被提及
+            # 提高当前权重
+            current_willing += 0.8
+            logger.debug(f"私聊, 当前意愿: {current_willing}")
+
         if is_emoji:
             current_willing *= 0.1
-            print(f"表情包, 当前意愿: {current_willing}")
+            logger.debug(f"表情包, 当前意愿: {current_willing}")
         
-        print(f"放大系数_interested_rate: {global_config.response_interested_rate_amplifier}")
+        logger.debug(f"放大系数_interested_rate: {global_config.response_interested_rate_amplifier}")
         interested_rate *= global_config.response_interested_rate_amplifier #放大回复兴趣度
         if interested_rate > 0.4:
             # print(f"兴趣度: {interested_rate}, 当前意愿: {current_willing}")
@@ -71,7 +98,8 @@ class WillingManager:
         current_willing *= global_config.response_willing_amplifier #放大回复意愿
         # print(f"放大系数_willing: {global_config.response_willing_amplifier}, 当前意愿: {current_willing}")
         
-        reply_probability = max((current_willing - 0.45) * 2, 0)
+        #reply_probability = max((current_willing - 0.45) * 2, 0)
+        reply_probability = max(s_curve(current_willing,), 0)   #s型曲线映射
         if chat_stream.group_info:
             # 是群聊
             if chat_stream.group_info.group_id in global_config.talk_allowed_groups.keys():
